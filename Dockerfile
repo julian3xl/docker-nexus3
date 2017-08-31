@@ -72,6 +72,15 @@ RUN useradd -r -u 200 -m -c "nexus role account" -d ${NEXUS_DATA} -s /bin/false 
   && ln -s ${NEXUS_DATA} ${SONATYPE_WORK}/nexus3 \
   && chown -R nexus:nexus ${NEXUS_DATA}
 
+ARG NEXUS_BLOBSTORE_S3_VERSION=1.0.1-SNAPSHOT
+RUN mkdir -p ${NEXUS_HOME}/system/org/sonatype/nexus/nexus-blobstore-s3/${NEXUS_BLOBSTORE_S3_VERSION}/
+ADD nexus-blobstore-s3-${NEXUS_BLOBSTORE_S3_VERSION}.jar ${NEXUS_HOME}/system/org/sonatype/nexus/nexus-blobstore-s3/${NEXUS_BLOBSTORE_S3_VERSION}/
+
+RUN sed -i.bak -e "/nexus-blobstore-file/a\\"$'\n'"<bundle>mvn:org.sonatype.nexus/nexus-blobstore-s3/${NEXUS_BLOBSTORE_S3_VERSION}</bundle>" \
+    ${NEXUS_HOME}/system/org/sonatype/nexus/assemblies/nexus-base-feature/*/nexus-base-feature-*-features.xml; \
+    sed -i.bak -e "/nexus-blobstore-file/a\\"$'\n'"<bundle>mvn:org.sonatype.nexus/nexus-blobstore-s3/${NEXUS_BLOBSTORE_S3_VERSION}</bundle>" \
+    ${NEXUS_HOME}/system/org/sonatype/nexus/assemblies/nexus-core-feature/*/nexus-core-feature-*-features.xml
+
 VOLUME ${NEXUS_DATA}
 
 EXPOSE 8081
